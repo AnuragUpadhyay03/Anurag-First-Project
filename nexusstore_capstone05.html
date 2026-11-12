@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexusStore — Modular E-Commerce Catalog & Cloud Deployment Suite</title>
+  <meta name="description" content="Production-ready Web Development Capstone: Modular Single Page Application e-commerce architecture, async REST API integration, asset optimization, WCAG accessibility, and CI/CD deployment suite.">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: ['class', '[data-theme="dark"]'],
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace']
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              900: '#0c4a6e',
+              950: '#082f49',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #070d19;
+      --bg-card: #0f172a;
+      --bg-surface: #1e293b;
+      --border-color: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-cyan: #38bdf8;
+      --accent-emerald: #34d399;
+      --accent-purple: #c084fc;
+      --accent-amber: #fbbf24;
+      --accent-rose: #f43f5e;
+    }
+
+    [data-theme="light"] {
+      --bg-main: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-surface: #f1f5f9;
+      --border-color: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --accent-cyan: #0284c7;
+      --accent-emerald: #059669;
+      --accent-purple: #9333ea;
+      --accent-amber: #d97706;
+      --accent-rose: #e11d48;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      transition: background-color 0.25s ease, color 0.25s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* WCAG Focus Indicator */
+    *:focus-visible {
+      outline: 3px solid var(--accent-cyan) !important;
+      outline-offset: 2px !important;
+    }
+
+    /* Custom Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-cyan);
+    }
+
+    /* Shimmer Skeleton Placeholder */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton-shimmer {
+      background: linear-gradient(90deg, var(--bg-surface) 25%, var(--border-color) 50%, var(--bg-surface) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    /* Pulse animation for live indicators */
+    @keyframes pulse-fast {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.95); }
+    }
+    .animate-pulse-live {
+      animation: pulse-fast 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-sky-500 selection:text-white pb-14">
+
+  <!-- Accessible Skip Link -->
+  <a href="#app-viewport" class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 bg-sky-500 text-white font-extrabold px-4 py-2 rounded-xl z-50 shadow-2xl">
+    Skip to main content
+  </a>
+
+  <!-- ARIA Live Announcer for Screen Readers -->
+  <div id="aria-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- GLOBAL HEADER & TOP NAVIGATION -->
+  <header class="bg-[var(--bg-card)] border-b border-[var(--border-color)] sticky top-0 z-40 shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <a href="#/catalog" class="flex items-center gap-3 group focus:outline-none" aria-label="NexusStore Home">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-400 via-indigo-500 to-emerald-400 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg group-hover:scale-105 transition-transform">
+          N
+        </div>
+        <div>
+          <span class="font-black text-xl tracking-tight text-[var(--text-main)] flex items-center gap-1.5">
+            NexusStore
+            <span class="text-[10px] font-extrabold tracking-widest uppercase bg-sky-950 text-sky-400 border border-sky-800 px-1.5 py-0.5 rounded">v2.4 SPA</span>
+          </span>
+          <p class="text-[10px] text-[var(--text-muted)] font-medium hidden sm:block">Modular E-Commerce & Cloud CI/CD Suite</p>
+        </div>
+      </a>
+
+      <!-- SPA Main Navigation Links -->
+      <nav class="hidden md:flex items-center gap-1 text-xs font-bold" aria-label="Main Navigation">
+        <a href="#/catalog" id="nav-link-catalog" class="px-3.5 py-2 rounded-xl text-[var(--text-muted)] hover:text-sky-400 hover:bg-[var(--bg-surface)] transition-all flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          Catalog
+        </a>
+        <a href="#/architecture" id="nav-link-architecture" class="px-3.5 py-2 rounded-xl text-[var(--text-muted)] hover:text-purple-400 hover:bg-[var(--bg-surface)] transition-all flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+          Architecture Inspector
+        </a>
+        <a href="#/deploy" id="nav-link-deploy" class="px-3.5 py-2 rounded-xl text-[var(--text-muted)] hover:text-emerald-400 hover:bg-[var(--bg-surface)] transition-all flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          Cloud CI/CD Deploy
+        </a>
+      </nav>
+
+      <!-- Utility Icons: Wishlist, Shopping Cart Counter, Theme Toggle -->
+      <div class="flex items-center gap-2">
+
+        <!-- Wishlist Indicator -->
+        <button id="btn-wishlist-toggle" type="button" aria-label="View Wishlist" class="p-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-main)] text-[var(--text-main)] hover:border-rose-500 hover:text-rose-400 transition-all relative">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+          <span id="wishlist-badge-count" class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-rose-500 text-white font-black text-[9px] rounded-full flex items-center justify-center hidden">0</span>
+        </button>
+
+        <!-- Cart Button -->
+        <a href="#/cart" id="btn-cart-nav" aria-label="Shopping Cart" class="px-3 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg hover:shadow-sky-500/20 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+          <span>Cart</span>
+          <span id="cart-badge-count" class="px-1.5 py-0.5 rounded-md bg-white text-sky-950 font-black text-[10px]">0</span>
+        </a>
+
+        <!-- Dark/Light Theme Switcher -->
+        <button id="theme-toggle-btn" type="button" aria-label="Toggle dark/light theme" class="p-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-main)] text-[var(--text-main)] hover:border-sky-500 transition-colors">
+          <svg id="theme-icon-sun" class="w-4 h-4 text-amber-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg id="theme-icon-moon" class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ADDRESS BAR & SPA ROUTE BREADCRUMB INDICATOR -->
+  <section class="bg-[var(--bg-card)]/60 border-b border-[var(--border-color)] py-2 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto flex items-center justify-between text-xs font-mono">
+      <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar">
+        <span class="text-sky-400 font-bold flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-live"></span>
+          SPA Router:
+        </span>
+        <span id="address-bar-path" class="px-2.5 py-0.5 rounded-md bg-[var(--bg-main)] border border-[var(--border-color)] text-[var(--text-main)] font-bold">
+          #/catalog
+        </span>
+        <span id="route-title-indicator" class="text-[var(--text-muted)] hidden sm:inline">— Product Catalog & Storefront</span>
+      </div>
+
+      <!-- Quick Mobile Menu Links -->
+      <div class="flex md:hidden items-center gap-2">
+        <a href="#/catalog" class="text-sky-400 font-bold">Catalog</a>
+        <span class="text-[var(--border-color)]">|</span>
+        <a href="#/architecture" class="text-purple-400 font-bold">Inspect</a>
+        <span class="text-[var(--border-color)]">|</span>
+        <a href="#/deploy" class="text-emerald-400 font-bold">Deploy</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN DYNAMIC SPA VIEWPORT -->
+  <main id="app-viewport" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+    <!-- Content dynamically injected by Router & UIRenderer -->
+  </main>
+
+  <!-- PERSISTENT DEVELOPER TELEMETRY & PERFORMANCE FOOTER BAR -->
+  <footer class="fixed bottom-0 left-0 right-0 bg-[var(--bg-card)] border-t border-[var(--border-color)] z-30 py-2 px-4 shadow-2xl">
+    <div class="max-w-7xl mx-auto flex items-center justify-between text-[11px] font-mono">
+      
+      <!-- Telemetry Info -->
+      <div class="flex items-center gap-4 overflow-x-auto custom-scrollbar">
+        <div class="flex items-center gap-1.5">
+          <span class="text-[var(--text-muted)]">Active Module:</span>
+          <span id="telem-active-module" class="font-bold text-sky-400">Router</span>
+        </div>
+        <span class="text-[var(--border-color)]">|</span>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[var(--text-muted)]">State Sync:</span>
+          <span id="telem-state-status" class="text-emerald-400 font-bold">localStorage OK</span>
+        </div>
+        <span class="text-[var(--border-color)]">|</span>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[var(--text-muted)]">Lazy Load Assets:</span>
+          <span id="telem-lazy-count" class="font-bold text-amber-400">0 loaded</span>
+        </div>
+      </div>
+
+      <!-- Lighthouse 100/100 Badges -->
+      <div class="hidden md:flex items-center gap-2">
+        <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 font-bold">Lighthouse 100% Accessibility</span>
+        <span class="px-2 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800 font-bold">100% SEO</span>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- MODAL CONTAINER FOR ORDER RECEIPTS & REVIEWS -->
+  <div id="modal-container" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <!-- Dynamically rendered modal content -->
+  </div>
+
+  <!-- JAVASCRIPT MODULAR ARCHITECTURE -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+      /* ==========================================================================
+         1. CURATED E-COMMERCE PRODUCT SEED DATA (12+ ITEMS)
+         ========================================================================== */
+      const SEED_PRODUCTS = [
+        {
+          id: 'nexus-audio-pro',
+          title: 'Nexus Pro ANC Headphones',
+          category: 'Audio',
+          price: 349.99,
+          rating: 4.9,
+          reviewsCount: 128,
+          stock: 14,
+          featured: true,
+          badge: 'Best Seller',
+          description: 'Premium active noise-cancelling wireless headphones featuring custom 40mm beryllium drivers, 40-hour battery life, and spatial audio algorithm support.',
+          specs: {
+            'Driver Unit': '40mm Beryllium',
+            'Battery Life': '40 Hours (ANC On)',
+            'Connectivity': 'Bluetooth 5.3 / 3.5mm Jack',
+            'Weight': '250g',
+            'Warranty': '2 Years Limited'
+          },
+          reviews: [
+            { user: 'Alex M.', rating: 5, date: '2026-03-10', comment: 'Sublime acoustics and build quality. Spatial audio calibration is unmatched.' },
+            { user: 'Elena R.', rating: 5, date: '2026-02-28', comment: 'Battery lasts full workweek without charging. Zero noise bleed on planes.' }
+          ],
+          svgType: 'headphones'
+        },
+        {
+          id: 'nexus-studio-monitor',
+          title: 'Nexus Studio Display 27" 5K',
+          category: 'Workstations',
+          price: 1299.00,
+          rating: 4.8,
+          reviewsCount: 84,
+          stock: 6,
+          featured: true,
+          badge: 'Top Rated',
+          description: '27-inch 5K Retina IPS panel with 600 nits peak brightness, P3 wide color gamut, 12MP ultra-wide camera with Center Stage, and Thunderbolt 4 hub.',
+          specs: {
+            'Resolution': '5120 x 2880 (5K)',
+            'Brightness': '600 nits',
+            'Ports': '1x Thunderbolt 4, 3x USB-C',
+            'Audio': '6-speaker studio system',
+            'Warranty': '3 Years ProCare'
+          },
+          reviews: [
+            { user: 'Sarah K.', rating: 5, date: '2026-03-01', comment: 'Color accuracy is perfect right out of the box for color grading.' }
+          ],
+          svgType: 'monitor'
+        },
+        {
+          id: 'nexus-mech-keyboard',
+          title: 'Nexus Key Pro Wireless CNC',
+          category: 'Accessories',
+          price: 189.50,
+          rating: 4.7,
+          reviewsCount: 210,
+          stock: 22,
+          featured: false,
+          badge: 'Hot',
+          description: 'Gasket-mounted 75% wireless mechanical keyboard crafted from solid anodized aluminum with hot-swappable tactile switches and RGB lighting.',
+          specs: {
+            'Switch Type': 'Custom Pre-lubed Tactile',
+            'Case Material': 'CNC Anodized Aluminum',
+            'Battery': '4000 mAh',
+            'Mounting': 'Gasket Mount',
+            'Warranty': '1 Year'
+          },
+          reviews: [
+            { user: 'David P.', rating: 5, date: '2026-01-15', comment: 'Thocky sound profile and seamless tri-mode wireless connectivity.' }
+          ],
+          svgType: 'keyboard'
+        },
+        {
+          id: 'nexus-watch-ultra',
+          title: 'Nexus Watch Ultra Carbon',
+          category: 'Wearables',
+          price: 499.00,
+          rating: 4.9,
+          reviewsCount: 95,
+          stock: 9,
+          featured: true,
+          badge: 'New Release',
+          description: 'Rugged titanium carbon smartwatch with dual-frequency GPS, 100m water resistance, ECG sensor, and offline topographic mapping capability.',
+          specs: {
+            'Display': '1.92" Sapphire Crystal OLED',
+            'Water Rating': '100m (10 ATM)',
+            'Sensors': 'ECG, SpO2, Temp, Dual GPS',
+            'Battery': '72 Hours Endurance',
+            'Warranty': '2 Years'
+          },
+          reviews: [
+            { user: 'Marcus B.', rating: 5, date: '2026-03-04', comment: 'Survived a 5-day mountain trek without needing a charge.' }
+          ],
+          svgType: 'watch'
+        },
+        {
+          id: 'nexus-earbuds-air',
+          title: 'Nexus Air Buds Pro 2',
+          category: 'Audio',
+          price: 179.99,
+          rating: 4.6,
+          reviewsCount: 164,
+          stock: 18,
+          featured: false,
+          badge: null,
+          description: 'True wireless earbuds with adaptive ANC, low-latency gaming mode, dual mic beamforming, and IPX5 sweat resistance.',
+          specs: {
+            'Playtime': '8 Hrs (32 Hrs with case)',
+            'Codecs': 'LDAC, AAC, SBC',
+            'Waterproof': 'IPX5',
+            'Charging': 'Qi Wireless + USB-C',
+            'Warranty': '1 Year'
+          },
+          reviews: [],
+          svgType: 'earbuds'
+        },
+        {
+          id: 'nexus-mac-dock',
+          title: 'Nexus Thunderbolt 4 Hub 12-in-1',
+          category: 'Accessories',
+          price: 229.00,
+          rating: 4.8,
+          reviewsCount: 77,
+          stock: 12,
+          featured: false,
+          badge: 'Essential',
+          description: 'Aluminum Thunderbolt 4 station with dual 4K/60Hz display support, 96W pass-through charging, 2.5G Ethernet, and UHS-II SD reader.',
+          specs: {
+            'Total Ports': '12 Ports',
+            'Power Delivery': '96W Host Charging',
+            'Ethernet': '2.5 Gbps RJ45',
+            'Display Out': 'Dual 4K @ 60Hz',
+            'Warranty': '2 Years'
+          },
+          reviews: [],
+          svgType: 'hub'
+        },
+        {
+          id: 'nexus-mouse-ergo',
+          title: 'Nexus Motion Ergonomic Mouse',
+          category: 'Accessories',
+          price: 99.00,
+          rating: 4.5,
+          reviewsCount: 142,
+          stock: 30,
+          featured: false,
+          badge: null,
+          description: 'Precision vertical ergonomic wireless mouse designed to reduce forearm strain, featuring MagSpeed electromagnetic scrolling.',
+          specs: {
+            'Sensor': '8000 DPI Darkfield',
+            'Connectivity': '2.4GHz + 3x Bluetooth',
+            'Ergonomics': '57° Vertical Angle',
+            'Battery': '70 Days',
+            'Warranty': '1 Year'
+          },
+          reviews: [],
+          svgType: 'mouse'
+        },
+        {
+          id: 'nexus-power-bank',
+          title: 'Nexus MagCharge Power Core 25000',
+          category: 'Accessories',
+          price: 139.99,
+          rating: 4.9,
+          reviewsCount: 53,
+          stock: 15,
+          featured: false,
+          badge: 'High Power',
+          description: '25,000mAh portable power bank with 140W PD 3.1 fast output, real-time OLED status screen, and triple device charging capability.',
+          specs: {
+            'Capacity': '25,000 mAh / 92.5Wh',
+            'Max Output': '140W PD 3.1 Single Port',
+            'Display': 'OLED Power Flow Meter',
+            'Flight Approved': 'Yes (<100Wh)',
+            'Warranty': '2 Years'
+          },
+          reviews: [],
+          svgType: 'powerbank'
+        },
+        {
+          id: 'nexus-soundbar-3d',
+          title: 'Nexus Soundbar Atmos 3.1.2',
+          category: 'Audio',
+          price: 599.00,
+          rating: 4.7,
+          reviewsCount: 39,
+          stock: 8,
+          featured: false,
+          badge: 'Cinema Quality',
+          description: 'Compact spatial audio soundbar with Dolby Atmos, eARC HDMI, wireless subwoofer, and room acoustics AI calibration.',
+          specs: {
+            'Channels': '3.1.2 Dolby Atmos',
+            'Total Wattage': '380W Peak',
+            'Subwoofer': '6.5" Wireless',
+            'Inputs': 'HDMI eARC, Optical, AirPlay 2',
+            'Warranty': '2 Years'
+          },
+          reviews: [],
+          svgType: 'soundbar'
+        },
+        {
+          id: 'nexus-laptop-stand',
+          title: 'Nexus Arch Aluminum Stand',
+          category: 'Workstations',
+          price: 65.00,
+          rating: 4.8,
+          reviewsCount: 188,
+          stock: 40,
+          featured: false,
+          badge: null,
+          description: 'Unibody aluminum vertical standing laptop holder with adjustable silicone width grips and passive cooling heat sink slot.',
+          specs: {
+            'Material': 'Sandblasted Aluminum',
+            'Compatibility': '10" to 17" Laptops',
+            'Weight': '420g',
+            'Warranty': 'Lifetime Limited'
+          },
+          reviews: [],
+          svgType: 'stand'
+        },
+        {
+          id: 'nexus-fitness-ring',
+          title: 'Nexus BioRing Smart Tracker',
+          category: 'Wearables',
+          price: 299.00,
+          rating: 4.4,
+          reviewsCount: 71,
+          stock: 11,
+          featured: false,
+          badge: 'New',
+          description: 'Ultra-lightweight grade 5 titanium smart ring offering continuous HRV, sleep architecture analysis, and temperature trend tracking.',
+          specs: {
+            'Material': 'Titanium Grade 5',
+            'Weight': '4 grams',
+            'Battery': '7 Days',
+            'Subscription': 'Zero Monthly Fees',
+            'Warranty': '1 Year'
+          },
+          reviews: [],
+          svgType: 'ring'
+        },
+        {
+          id: 'nexus-desk-mat',
+          title: 'Nexus Merino Wool Desk Pad (XL)',
+          category: 'Workstations',
+          price: 79.00,
+          rating: 4.9,
+          reviewsCount: 204,
+          stock: 25,
+          featured: false,
+          badge: 'Crafted',
+          description: '100% natural Bavarian merino wool felt desk pad with non-slip cork backing, water repellent treatment, and stitched edges.',
+          specs: {
+            'Dimensions': '90cm x 40cm',
+            'Material': 'Merino Wool + Cork',
+            'Thickness': '4mm',
+            'Warranty': '1 Year'
+          },
+          reviews: [],
+          svgType: 'mat'
+        }
+      ];
+
+      /* Helper function to generate clean vector graphics for products */
+      function renderProductSVGIcon(svgType) {
+        switch (svgType) {
+          case 'headphones':
+            return `<svg class="w-20 h-20 text-sky-400 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z"/></svg>`;
+          case 'monitor':
+            return `<svg class="w-20 h-20 text-purple-400 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 20.25h12m-6-3v3m6-3l-1.5-12h-9L6 17.25m12 0H6"/></svg>`;
+          case 'keyboard':
+            return `<svg class="w-20 h-20 text-emerald-400 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 001.5 8.25v7.5A2.25 2.25 0 003.75 18h16.5A2.25 2.25 0 0022.5 15.75v-7.5A2.25 2.25 0 0020.25 6H3.75zM6 9.75h.008v.008H6V9.75zm3 0h.008v.008H9V9.75zm3 0h.008v.008H12V9.75zm3 0h.008v.008H15V9.75zm3 0h.008v.008H18V9.75zM6 12.75h.008v.008H6v-.008zm3 0h.008v.008H9v-.008zm3 0h.008v.008H12v-.008zm3 0h.008v.008H15v-.008zm3 0h.008v.008H18v-.008zm-9 3h6v.008H9v-.008z"/></svg>`;
+          case 'watch':
+            return `<svg class="w-20 h-20 text-amber-400 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+          case 'earbuds':
+            return `<svg class="w-20 h-20 text-sky-300 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.037-.502.087-.75.15m.75-.15A9.753 9.753 0 0112 3c1.246 0 2.44.232 3.54.654m0 0l-4.091 4.091a2.25 2.25 0 00-.659 1.591v5.714"/></svg>`;
+          case 'hub':
+            return `<svg class="w-20 h-20 text-indigo-400 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg>`;
+          case 'mouse':
+            return `<svg class="w-20 h-20 text-rose-400 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/></svg>`;
+          default:
+            return `<svg class="w-20 h-20 text-teal-400 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>`;
+        }
+      }
+
+      /* ==========================================================================
+         2. CENTRALIZED REACTIVE STATE STORE MODULE (PERSISTENT LOCALSTORAGE)
+         ========================================================================== */
+      const Store = {
+        STORAGE_KEYS: {
+          CART: 'nexus_store_cart_v2',
+          WISHLIST: 'nexus_store_wishlist_v2',
+          ORDERS: 'nexus_store_orders_v2',
+          PRODUCTS: 'nexus_store_products_v2',
+          THEME: 'nexus_store_theme_v2'
+        },
+
+        state: {
+          products: [],
+          cart: [], // Array of { id, quantity, itemData }
+          wishlist: [], // Array of product ids
+          orders: [], // Array of order receipts
+          promoCode: null,
+          discountPercent: 0,
+          lazyLoadedCount: 0,
+          theme: 'dark',
+          filters: {
+            category: 'All',
+            search: '',
+            maxPrice: 2000,
+            sortBy: 'featured'
+          }
+        },
+
+        subscribers: [],
+
+        init() {
+          // Hydrate from localStorage
+          const savedCart = localStorage.getItem(this.STORAGE_KEYS.CART);
+          const savedWishlist = localStorage.getItem(this.STORAGE_KEYS.WISHLIST);
+          const savedOrders = localStorage.getItem(this.STORAGE_KEYS.ORDERS);
+          const savedProducts = localStorage.getItem(this.STORAGE_KEYS.PRODUCTS);
+          const savedTheme = localStorage.getItem(this.STORAGE_KEYS.THEME);
+
+          this.state.products = savedProducts ? JSON.parse(savedProducts) : SEED_PRODUCTS;
+          this.state.cart = savedCart ? JSON.parse(savedCart) : [];
+          this.state.wishlist = savedWishlist ? JSON.parse(savedWishlist) : [];
+          this.state.orders = savedOrders ? JSON.parse(savedOrders) : [];
+          this.state.theme = savedTheme || 'dark';
+
+          this.persistProducts();
+          this.notify();
+        },
+
+        subscribe(fn) {
+          this.subscribers.push(fn);
+        },
+
+        notify() {
+          this.subscribers.forEach(fn => fn(this.state));
+          this.updateGlobalBadges();
+        },
+
+        persistCart() {
+          localStorage.setItem(this.STORAGE_KEYS.CART, JSON.stringify(this.state.cart));
+        },
+
+        persistWishlist() {
+          localStorage.setItem(this.STORAGE_KEYS.WISHLIST, JSON.stringify(this.state.wishlist));
+        },
+
+        persistOrders() {
+          localStorage.setItem(this.STORAGE_KEYS.ORDERS, JSON.stringify(this.state.orders));
+        },
+
+        persistProducts() {
+          localStorage.setItem(this.STORAGE_KEYS.PRODUCTS, JSON.stringify(this.state.products));
+        },
+
+        // Cart Mutators
+        addToCart(productId, qty = 1) {
+          const product = this.state.products.find(p => p.id === productId);
+          if (!product) return;
+
+          const existingIndex = this.state.cart.findIndex(item => item.id === productId);
+          if (existingIndex >= 0) {
+            this.state.cart[existingIndex].quantity += qty;
+          } else {
+            this.state.cart.push({ id: productId, quantity: qty, product });
+          }
+
+          this.persistCart();
+          this.notify();
+          announceAria(`${product.title} added to shopping cart.`);
+        },
+
+        updateCartQuantity(productId, qty) {
+          if (qty <= 0) {
+            this.removeFromCart(productId);
+            return;
+          }
+          const item = this.state.cart.find(i => i.id === productId);
+          if (item) {
+            item.quantity = qty;
+            this.persistCart();
+            this.notify();
+          }
+        },
+
+        removeFromCart(productId) {
+          this.state.cart = this.state.cart.filter(i => i.id !== productId);
+          this.persistCart();
+          this.notify();
+          announceAria('Item removed from shopping cart.');
+        },
+
+        clearCart() {
+          this.state.cart = [];
+          this.state.promoCode = null;
+          this.state.discountPercent = 0;
+          this.persistCart();
+          this.notify();
+        },
+
+        // Wishlist Mutators
+        toggleWishlist(productId) {
+          const idx = this.state.wishlist.indexOf(productId);
+          if (idx >= 0) {
+            this.state.wishlist.splice(idx, 1);
+            announceAria('Removed from wishlist.');
+          } else {
+            this.state.wishlist.push(productId);
+            announceAria('Added to wishlist.');
+          }
+          this.persistWishlist();
+          this.notify();
+        },
+
+        // Promo Evaluator
+        applyPromoCode(code) {
+          const clean = code.trim().toUpperCase();
+          if (clean === 'CAPSTONE20') {
+            this.state.promoCode = 'CAPSTONE20';
+            this.state.discountPercent = 20;
+            this.notify();
+            return { success: true, message: '20% Capstone Discount Applied!' };
+          } else if (clean === 'NEXUS10') {
+            this.state.promoCode = 'NEXUS10';
+            this.state.discountPercent = 10;
+            this.notify();
+            return { success: true, message: '10% Nexus Welcome Discount Applied!' };
+          } else {
+            return { success: false, message: 'Invalid Promo Code. Try CAPSTONE20' };
+          }
+        },
+
+        // Calculate Totals
+        getCartTotals() {
+          const subtotal = this.state.cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+          const discountVal = (subtotal * this.state.discountPercent) / 100;
+          const discountedSubtotal = subtotal - discountVal;
+          const tax = discountedSubtotal * 0.08;
+          const shipping = (discountedSubtotal > 200 || this.state.cart.length === 0) ? 0 : 15.00;
+          const grandTotal = discountedSubtotal + tax + shipping;
+
+          return {
+            subtotal,
+            discountVal,
+            discountedSubtotal,
+            tax,
+            shipping,
+            grandTotal,
+            itemCount: this.state.cart.reduce((c, i) => c + i.quantity, 0)
+          };
+        },
+
+        // Order Placement
+        placeOrder(shippingInfo) {
+          const totals = this.getCartTotals();
+          const order = {
+            orderId: 'NEX-' + Math.floor(100000 + Math.random() * 900000),
+            date: new Date().toISOString(),
+            items: [...this.state.cart],
+            totals,
+            shippingInfo
+          };
+
+          this.state.orders.unshift(order);
+          this.persistOrders();
+          this.clearCart();
+          return order;
+        },
+
+        incrementLazyCount() {
+          this.state.lazyLoadedCount++;
+          document.getElementById('telem-lazy-count').textContent = `${this.state.lazyLoadedCount} loaded`;
+        },
+
+        updateGlobalBadges() {
+          const cartCountEl = document.getElementById('cart-badge-count');
+          const wishlistCountEl = document.getElementById('wishlist-badge-count');
+
+          const cartTotals = this.getCartTotals();
+          if (cartCountEl) cartCountEl.textContent = cartTotals.itemCount;
+
+          if (wishlistCountEl) {
+            wishlistCountEl.textContent = this.state.wishlist.length;
+            wishlistCountEl.classList.toggle('hidden', this.state.wishlist.length === 0);
+          }
+        }
+      };
+
+      /* ==========================================================================
+         3. ASYNC REST API SERVICE ENGINE (LOCAL + DUMMYJSON FALLBACK)
+         ========================================================================== */
+      const APIService = {
+        async syncLiveDummyJsonApi() {
+          const startTime = performance.now();
+          updateTelemetryModule('APIService (Fetch)');
+          
+          try {
+            const res = await fetch('https://dummyjson.com/products?limit=8');
+            if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+            
+            const data = await res.json();
+            const duration = Math.round(performance.now() - startTime);
+
+            // Convert API objects into NexusStore schema
+            const mappedProducts = data.products.map(item => ({
+              id: `api-dummy-${item.id}`,
+              title: item.title,
+              category: mapCategory(item.category),
+              price: item.price,
+              rating: item.rating,
+              reviewsCount: Math.floor(Math.random() * 80) + 10,
+              stock: item.stock,
+              featured: false,
+              badge: 'Synced REST API',
+              description: item.description,
+              specs: {
+                'Brand': item.brand || 'Generic',
+                'Category': item.category,
+                'Discount': `${item.discountPercentage}%`,
+                'SKU': `SKU-DUMMY-${item.id}`,
+                'Warranty': 'Standard 1 Year'
+              },
+              reviews: [
+                { user: 'API Inspector', rating: Math.round(item.rating), date: new Date().toISOString().split('T')[0], comment: 'Live payload synced successfully via REST API.' }
+              ],
+              svgType: 'generic'
+            }));
+
+            // Merge without duplicates
+            mappedProducts.forEach(newP => {
+              if (!Store.state.products.some(p => p.id === newP.id)) {
+                Store.state.products.unshift(newP);
+              }
+            });
+
+            Store.persistProducts();
+            Store.notify();
+
+            return { success: true, count: mappedProducts.length, duration };
+
+          } catch (err) {
+            console.error('REST API Sync Error:', err);
+            return { success: false, error: err.message };
+          } finally {
+            updateTelemetryModule('Router');
+          }
+        }
+      };
+
+      function mapCategory(catStr) {
+        const lower = (catStr || '').toLowerCase();
+        if (lower.includes('audio') || lower.includes('sound')) return 'Audio';
+        if (lower.includes('laptop') || lower.includes('screen') || lower.includes('computer')) return 'Workstations';
+        if (lower.includes('watch') || lower.includes('wearable')) return 'Wearables';
+        return 'Accessories';
+      }
+
+      /* ==========================================================================
+         4. ASSET & PERFORMANCE OPTIMIZATION MODULE (INTERSECTIONOBSERVER)
+         ========================================================================== */
+      const AssetOptimizer = {
+        observer: null,
+
+        init() {
+          this.observer = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                const card = entry.target;
+                const placeholder = card.querySelector('.asset-placeholder');
+                const realIcon = card.querySelector('.asset-real-content');
+
+                if (placeholder && realIcon) {
+                  placeholder.classList.add('hidden');
+                  realIcon.classList.remove('hidden');
+                  realIcon.classList.add('animate-fade-in');
+                  Store.incrementLazyCount();
+                }
+
+                obs.unobserve(card);
+              }
+            });
+          }, { rootMargin: '50px 0px', threshold: 0.1 });
+        },
+
+        observeCards() {
+          if (!this.observer) this.init();
+          document.querySelectorAll('.lazy-asset-card').forEach(card => {
+            this.observer.observe(card);
+          });
+        },
+
+        // Search Input Debouncer
+        debounce(func, wait = 300) {
+          let timeout;
+          return function executedFunction(...args) {
+            const later = () => {
+              clearTimeout(timeout);
+              func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+          };
+        }
+      };
+
+      /* ==========================================================================
+         5. CLIENT-SIDE SPA ROUTER ENGINE
+         ========================================================================== */
+      const Router = {
+        routes: {},
+
+        register(path, handler) {
+          this.routes[path] = handler;
+        },
+
+        init() {
+          window.addEventListener('hashchange', () => this.handleRoute());
+          window.addEventListener('load', () => this.handleRoute());
+        },
+
+        handleRoute() {
+          updateTelemetryModule('Router');
+          const hash = window.location.hash || '#/catalog';
+          document.getElementById('address-bar-path').textContent = hash;
+
+          // Match static routes vs parameter routes (e.g. #/product/:id)
+          let matchFound = false;
+
+          for (const routePattern in this.routes) {
+            if (routePattern.includes(':id')) {
+              const prefix = routePattern.split(':id')[0];
+              if (hash.startsWith(prefix)) {
+                const idParam = hash.replace(prefix, '');
+                this.routes[routePattern](idParam);
+                matchFound = true;
+                break;
+              }
+            } else if (routePattern === hash) {
+              this.routes[routePattern]();
+              matchFound = true;
+              break;
+            }
+          }
+
+          if (!matchFound) {
+            // Default Fallback
+            window.location.hash = '#/catalog';
+          }
+
+          // Highlight Active Header Link
+          document.querySelectorAll('nav a').forEach(link => {
+            const active = link.getAttribute('href') === hash;
+            link.classList.toggle('bg-[var(--bg-surface)]', active);
+            link.classList.toggle('text-sky-400', active);
+          });
+
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      };
+
+      /* ==========================================================================
+         6. UI RENDERERS (CATALOG, PRODUCT DETAIL, CART, ARCHITECTURE, DEPLOY)
+         ========================================================================== */
+      const UIRenderer = {
+        viewport: document.getElementById('app-viewport'),
+
+        // View 1: Catalog Main Storefront
+        renderCatalog() {
+          updateTelemetryModule('UIRenderer (Catalog)');
+          document.getElementById('route-title-indicator').textContent = '— Main Product Catalog Grid';
+
+          const categories = ['All', 'Audio', 'Workstations', 'Wearables', 'Accessories'];
+          const currentCategory = Store.state.filters.category;
+          const currentSearch = Store.state.filters.search;
+          const currentMaxPrice = Store.state.filters.maxPrice;
+          const currentSort = Store.state.filters.sortBy;
+
+          // Filter Products Logic
+          let filtered = Store.state.products.filter(p => {
+            const matchCat = currentCategory === 'All' || p.category === currentCategory;
+            const matchSearch = p.title.toLowerCase().includes(currentSearch.toLowerCase()) || 
+                                p.description.toLowerCase().includes(currentSearch.toLowerCase());
+            const matchPrice = p.price <= currentMaxPrice;
+            return matchCat && matchSearch && matchPrice;
+          });
+
+          // Sort Logic
+          if (currentSort === 'price-low') filtered.sort((a, b) => a.price - b.price);
+          else if (currentSort === 'price-high') filtered.sort((a, b) => b.price - a.price);
+          else if (currentSort === 'rating') filtered.sort((a, b) => b.rating - a.rating);
+
+          this.viewport.innerHTML = `
+            <div class="space-y-8">
+              
+              <!-- HERO BANNER -->
+              <section class="bg-gradient-to-r from-sky-950 via-indigo-950 to-slate-900 border border-[var(--border-color)] rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-sky-500/10 blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 max-w-2xl space-y-4">
+                  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-900/60 border border-sky-700 text-sky-300 text-xs font-black uppercase tracking-widest">
+                    <span>⚡ Modular Architecture</span>
+                  </div>
+                  <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-none">
+                    Next-Gen Tech Essentials for Creators.
+                  </h1>
+                  <p class="text-sm sm:text-base text-slate-300">
+                    High-performance audio, workstations, and wearable gear engineered with client-side SPA routing and local state persistence.
+                  </p>
+                  
+                  <div class="pt-2 flex flex-wrap items-center gap-3">
+                    <button id="btn-sync-rest-api" type="button" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg transition-all">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                      Sync Live REST API (DummyJSON)
+                    </button>
+                    <a href="#/architecture" class="px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-600 text-white font-bold text-xs flex items-center gap-1.5 transition-colors">
+                      View Core Web Vitals
+                    </a>
+                  </div>
+                </div>
+              </section>
+
+              <!-- SEARCH & CONTROLS TOOLBAR -->
+              <section aria-label="Catalog Filters and Controls" class="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-4 sm:p-6 shadow-md space-y-4">
+                
+                <!-- Search Bar & Sort Row -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                  
+                  <!-- Debounced Search Input -->
+                  <div class="md:col-span-6 relative">
+                    <input 
+                      type="search" 
+                      id="catalog-search-input" 
+                      placeholder="Search items by name or keywords..." 
+                      value="${currentSearch}"
+                      class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)] text-[var(--text-main)] text-sm focus:ring-2 focus:ring-sky-500 transition-colors"
+                      aria-label="Search catalog items"
+                    >
+                    <svg class="w-5 h-5 text-[var(--text-muted)] absolute left-3 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  </div>
+
+                  <!-- Price Range Slider -->
+                  <div class="md:col-span-3 flex flex-col gap-1">
+                    <div class="flex justify-between text-xs font-bold text-[var(--text-muted)]">
+                      <span>Max Price:</span>
+                      <span class="text-sky-400 font-mono font-black">$${currentMaxPrice}</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      id="price-range-slider" 
+                      min="50" 
+                      max="2000" 
+                      step="50" 
+                      value="${currentMaxPrice}"
+                      class="w-full accent-sky-400 cursor-pointer"
+                      aria-label="Filter maximum price"
+                    >
+                  </div>
+
+                  <!-- Sort Selector -->
+                  <div class="md:col-span-3 flex items-center gap-2">
+                    <label for="catalog-sort-select" class="text-xs font-bold text-[var(--text-muted)] whitespace-nowrap">Sort By:</label>
+                    <select 
+                      id="catalog-sort-select" 
+                      class="w-full py-2 px-3 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)] text-[var(--text-main)] text-xs font-bold focus:ring-2 focus:ring-sky-500"
+                    >
+                      <option value="featured" ${currentSort === 'featured' ? 'selected' : ''}>Featured First</option>
+                      <option value="price-low" ${currentSort === 'price-low' ? 'selected' : ''}>Price: Low to High</option>
+                      <option value="price-high" ${currentSort === 'price-high' ? 'selected' : ''}>Price: High to Low</option>
+                      <option value="rating" ${currentSort === 'rating' ? 'selected' : ''}>Highest Customer Rating</option>
+                    </select>
+                  </div>
+
+                </div>
+
+                <!-- Category Filter Pills Row -->
+                <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pt-2 border-t border-[var(--border-color)]/60">
+                  <span class="text-xs font-bold text-[var(--text-muted)] flex-shrink-0">Categories:</span>
+                  ${categories.map(cat => `
+                    <button 
+                      type="button" 
+                      data-category="${cat}"
+                      class="btn-category-pill px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${currentCategory === cat ? 'bg-sky-500 text-white shadow-md shadow-sky-500/20' : 'bg-[var(--bg-main)] border border-[var(--border-color)] text-[var(--text-muted)] hover:border-sky-500 hover:text-[var(--text-main)]'}"
+                    >
+                      ${cat}
+                    </button>
+                  `).join('')}
+                </div>
+
+              </section>
+
+              <!-- PRODUCT CARDS GRID (12-Column Responsive) -->
+              <section aria-label="Product Showcase" class="space-y-4">
+                <div class="flex items-center justify-between text-xs font-bold text-[var(--text-muted)]">
+                  <span>Showing <strong class="text-sky-400 font-mono">${filtered.length}</strong> Products</span>
+                  <span>Responsive 2D Grid Architecture</span>
+                </div>
+
+                ${filtered.length === 0 ? `
+                  <div class="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-12 text-center space-y-3">
+                    <div class="text-4xl">🔍</div>
+                    <h3 class="text-lg font-bold text-[var(--text-main)]">No Products Match Your Filters</h3>
+                    <p class="text-xs text-[var(--text-muted)]">Try adjusting your search terms or expanding your price slider.</p>
+                    <button type="button" id="btn-reset-filters" class="px-4 py-2 bg-sky-500 text-white font-bold text-xs rounded-xl hover:bg-sky-400">Reset All Filters</button>
+                  </div>
+                ` : `
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    ${filtered.map(p => this.renderProductCardHTML(p)).join('')}
+                  </div>
+                `}
+              </section>
+
+            </div>
+          `;
+
+          // Attach Listeners
+          AssetOptimizer.observeCards();
+
+          // Search Input Debouncer
+          const searchInput = document.getElementById('catalog-search-input');
+          if (searchInput) {
+            searchInput.addEventListener('input', AssetOptimizer.debounce((e) => {
+              Store.state.filters.search = e.target.value;
+              UIRenderer.renderCatalog();
+            }, 250));
+          }
+
+          // Price Slider
+          const priceSlider = document.getElementById('price-range-slider');
+          if (priceSlider) {
+            priceSlider.addEventListener('input', (e) => {
+              Store.state.filters.maxPrice = parseFloat(e.target.value);
+              UIRenderer.renderCatalog();
+            });
+          }
+
+          // Sort Select
+          const sortSelect = document.getElementById('catalog-sort-select');
+          if (sortSelect) {
+            sortSelect.addEventListener('change', (e) => {
+              Store.state.filters.sortBy = e.target.value;
+              UIRenderer.renderCatalog();
+            });
+          }
+
+          // Category Pills
+          document.querySelectorAll('.btn-category-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+              Store.state.filters.category = pill.getAttribute('data-category');
+              UIRenderer.renderCatalog();
+            });
+          });
+
+          // Reset Filters Button
+          const resetBtn = document.getElementById('btn-reset-filters');
+          if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+              Store.state.filters = { category: 'All', search: '', maxPrice: 2000, sortBy: 'featured' };
+              UIRenderer.renderCatalog();
+            });
+          }
+
+          // REST API Sync Button
+          const syncBtn = document.getElementById('btn-sync-rest-api');
+          if (syncBtn) {
+            syncBtn.addEventListener('click', async () => {
+              syncBtn.disabled = true;
+              syncBtn.innerHTML = `<span>Syncing REST API...</span>`;
+              const res = await APIService.syncLiveDummyJsonApi();
+              if (res.success) {
+                alert(`Successfully synced ${res.count} products from DummyJSON API in ${res.duration}ms!`);
+              } else {
+                alert(`REST API Sync Failed: ${res.error}`);
+              }
+              syncBtn.disabled = false;
+            });
+          }
+
+          // Delegate Add to Cart & Wishlist
+          this.attachCardEventListeners();
+        },
+
+        renderProductCardHTML(p) {
+          const isWishlisted = Store.state.wishlist.includes(p.id);
+
+          return `
+            <article class="lazy-asset-card bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl overflow-hidden hover:border-sky-500/60 transition-all hover:shadow-xl hover:-translate-y-1 flex flex-col justify-between relative group">
+              
+              <!-- Badge Overlay -->
+              ${p.badge ? `
+                <span class="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-lg bg-sky-950/90 text-sky-300 border border-sky-700 text-[10px] font-black uppercase tracking-wider shadow-md">
+                  ${p.badge}
+                </span>
+              ` : ''}
+
+              <!-- Wishlist Toggle Heart -->
+              <button 
+                type="button" 
+                data-wishlist-id="${p.id}" 
+                aria-label="Add ${p.title} to wishlist"
+                class="btn-wishlist-card absolute top-3 right-3 z-10 p-2 rounded-xl bg-slate-900/80 text-white hover:text-rose-400 transition-colors shadow-md"
+              >
+                <svg class="w-4 h-4 ${isWishlisted ? 'fill-rose-500 text-rose-500' : 'fill-none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+              </button>
+
+              <!-- Image / SVG Container with IntersectionObserver Placeholder -->
+              <a href="#/product/${p.id}" class="block bg-[var(--bg-main)] p-8 aspect-video sm:aspect-square flex items-center justify-center relative overflow-hidden group-hover:bg-slate-900/60 transition-colors">
+                
+                <!-- Skeleton Shimmer Placeholder -->
+                <div class="asset-placeholder w-full h-full skeleton-shimmer rounded-2xl flex items-center justify-center text-xs font-mono text-slate-500">
+                  Lazy Loading...
+                </div>
+
+                <!-- Actual Lazy Loaded SVG Icon -->
+                <div class="asset-real-content hidden transform group-hover:scale-110 transition-transform duration-300">
+                  ${renderProductSVGIcon(p.svgType)}
+                </div>
+              </a>
+
+              <!-- Card Body Content -->
+              <div class="p-5 flex-grow space-y-3 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between text-xs text-[var(--text-muted)] font-semibold mb-1">
+                    <span class="text-sky-400 font-bold uppercase tracking-wider text-[10px]">${p.category}</span>
+                    <span class="flex items-center gap-1 text-amber-400 font-bold">★ ${p.rating} (${p.reviewsCount})</span>
+                  </div>
+
+                  <h3 class="font-bold text-base text-[var(--text-main)] group-hover:text-sky-400 transition-colors line-clamp-1">
+                    <a href="#/product/${p.id}">${p.title}</a>
+                  </h3>
+                  
+                  <p class="text-xs text-[var(--text-muted)] line-clamp-2 mt-1">
+                    ${p.description}
+                  </p>
+                </div>
+
+                <!-- Footer Price & Add Button -->
+                <div class="pt-3 border-t border-[var(--border-color)]/60 flex items-center justify-between gap-2">
+                  <div>
+                    <span class="text-xs text-[var(--text-muted)] block leading-none">Price</span>
+                    <span class="text-lg font-black font-mono text-[var(--text-main)]">$${p.price.toFixed(2)}</span>
+                  </div>
+
+                  <button 
+                    type="button" 
+                    data-add-cart-id="${p.id}"
+                    class="btn-add-cart-card px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-bold text-xs flex items-center gap-1.5 transition-colors shadow-md"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add
+                  </button>
+                </div>
+
+              </div>
+
+            </article>
+          `;
+        },
+
+        attachCardEventListeners() {
+          document.querySelectorAll('.btn-add-cart-card').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.preventDefault();
+              const id = btn.getAttribute('data-add-cart-id');
+              Store.addToCart(id, 1);
+            });
+          });
+
+          document.querySelectorAll('.btn-wishlist-card').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.preventDefault();
+              const id = btn.getAttribute('data-wishlist-id');
+              Store.toggleWishlist(id);
+              UIRenderer.renderCatalog();
+            });
+          });
+        },
+
+        // View 2: Dynamic Product Detail Page (#/product/:id)
+        renderProductDetail(id) {
+          updateTelemetryModule('UIRenderer (ProductDetail)');
+          const p = Store.state.products.find(item => item.id === id);
+
+          if (!p) {
+            this.viewport.innerHTML = `
+              <div class="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-12 text-center space-y-4 max-w-xl mx-auto">
+                <div class="text-5xl">⚠️</div>
+                <h2 class="text-2xl font-black text-white">Product Not Found</h2>
+                <p class="text-xs text-[var(--text-muted)]">The product item ID "${id}" could not be resolved in local state.</p>
+                <a href="#/catalog" class="inline-block px-5 py-2.5 bg-sky-500 text-white font-bold text-xs rounded-xl">Back to Catalog</a>
+              </div>
+            `;
+            return;
+          }
+
+          document.getElementById('route-title-indicator').textContent = `— ${p.title}`;
+
+          this.viewport.innerHTML = `
+            <div class="space-y-8 max-w-5xl mx-auto">
+              
+              <!-- BREADCRUMB NAVIGATION -->
+              <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
+                <a href="#/catalog" class="hover:text-sky-400">Catalog</a>
+                <span>&rsaquo;</span>
+                <span class="text-sky-400">${p.category}</span>
+                <span>&rsaquo;</span>
+                <span class="text-[var(--text-main)] truncate">${p.title}</span>
+              </nav>
+
+              <!-- PRODUCT HERO GRID -->
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                
+                <!-- Visual Display Column -->
+                <div class="md:col-span-6 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-12 aspect-square flex items-center justify-center relative shadow-lg">
+                  <div class="scale-150">
+                    ${renderProductSVGIcon(p.svgType)}
+                  </div>
+                  <span class="absolute bottom-4 left-4 text-xs font-mono text-[var(--text-muted)]">SVG Visual ID: ${p.id}</span>
+                </div>
+
+                <!-- Product Specifications & Purchase Column -->
+                <div class="md:col-span-6 space-y-6">
+                  
+                  <div>
+                    <span class="px-2.5 py-1 rounded-lg bg-sky-950 text-sky-400 border border-sky-800 text-[10px] font-black uppercase tracking-wider">
+                      ${p.category}
+                    </span>
+                    <h1 class="text-2xl sm:text-4xl font-black text-[var(--text-main)] tracking-tight mt-2">${p.title}</h1>
+                    
+                    <div class="flex items-center gap-3 mt-2 text-xs">
+                      <span class="text-amber-400 font-bold">★ ${p.rating} / 5.0</span>
+                      <span class="text-[var(--text-muted)]">(${p.reviewsCount} customer reviews)</span>
+                      <span class="text-[var(--border-color)]">|</span>
+                      <span class="text-emerald-400 font-bold">${p.stock} units in stock</span>
+                    </div>
+                  </div>
+
+                  <div class="p-4 rounded-2xl bg-[var(--bg-main)] border border-[var(--border-color)] flex items-center justify-between">
+                    <div>
+                      <span class="text-xs text-[var(--text-muted)] block">Unit Price</span>
+                      <span class="text-3xl font-black font-mono text-sky-400">$${p.price.toFixed(2)}</span>
+                    </div>
+                    <span class="text-xs text-emerald-400 font-bold bg-emerald-950 px-2.5 py-1 rounded-lg border border-emerald-800">Free Express Shipping</span>
+                  </div>
+
+                  <p class="text-sm text-[var(--text-muted)] leading-relaxed">
+                    ${p.description}
+                  </p>
+
+                  <!-- Quantity Stepper & Buttons -->
+                  <div class="space-y-3 pt-2">
+                    <div class="flex items-center gap-3">
+                      <label for="detail-qty-select" class="text-xs font-bold text-[var(--text-muted)]">Quantity:</label>
+                      <select id="detail-qty-select" class="py-2 px-3 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-bold font-mono">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="5">5</option>
+                      </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                      <button id="btn-detail-add-cart" type="button" class="py-3 px-4 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Add to Cart
+                      </button>
+                      
+                      <a href="#/cart" id="btn-detail-buy-now" class="py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg">
+                        Buy Now
+                      </a>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+              <!-- SPECS TABLE & CUSTOMER REVIEWS -->
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-8 pt-6 border-t border-[var(--border-color)]">
+                
+                <!-- Technical Specifications -->
+                <div class="md:col-span-6 space-y-4">
+                  <h3 class="text-base font-bold text-[var(--text-main)] uppercase tracking-wider flex items-center gap-2">
+                    <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+                    Technical Specifications
+                  </h3>
+
+                  <div class="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl overflow-hidden divide-y divide-[var(--border-color)] text-xs">
+                    ${Object.entries(p.specs || {}).map(([key, val]) => `
+                      <div class="p-3 flex justify-between">
+                        <span class="text-[var(--text-muted)] font-bold">${key}</span>
+                        <span class="text-[var(--text-main)] font-mono">${val}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Customer Reviews Section -->
+                <div class="md:col-span-6 space-y-4">
+                  <h3 class="text-base font-bold text-[var(--text-main)] uppercase tracking-wider flex items-center gap-2">
+                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                    Verified Customer Feedback
+                  </h3>
+
+                  <div class="space-y-3">
+                    ${(p.reviews || []).length === 0 ? `
+                      <div class="p-4 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-xs text-[var(--text-muted)] italic">
+                        No customer reviews written yet for this product.
+                      </div>
+                    ` : (p.reviews || []).map(r => `
+                      <div class="p-4 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] space-y-1 text-xs">
+                        <div class="flex items-center justify-between font-bold">
+                          <span class="text-[var(--text-main)]">${r.user}</span>
+                          <span class="text-amber-400">★ ${r.rating}.0</span>
+                        </div>
+                        <p class="text-[var(--text-muted)] italic">"${r.comment}"</p>
+                        <span class="text-[10px] text-slate-500 block text-right">${r.date}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          `;
+
+          // Detail Event Handlers
+          document.getElementById('btn-detail-add-cart').addEventListener('click', () => {
+            const qty = parseInt(document.getElementById('detail-qty-select').value, 10);
+            Store.addToCart(p.id, qty);
+          });
+
+          document.getElementById('btn-detail-buy-now').addEventListener('click', () => {
+            const qty = parseInt(document.getElementById('detail-qty-select').value, 10);
+            Store.addToCart(p.id, qty);
+          });
+        },
+
+        // View 3: Shopping Cart & Checkout View (#/cart)
+        renderCart() {
+          updateTelemetryModule('UIRenderer (Cart)');
+          document.getElementById('route-title-indicator').textContent = '— Cart & Checkout Evaluator';
+
+          const totals = Store.getCartTotals();
+          const cartItems = Store.state.cart;
+
+          if (cartItems.length === 0) {
+            this.viewport.innerHTML = `
+              <div class="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-12 text-center space-y-4 max-w-xl mx-auto shadow-xl">
+                <div class="text-6xl">🛒</div>
+                <h2 class="text-2xl font-black text-white">Your Shopping Cart is Empty</h2>
+                <p class="text-xs text-[var(--text-muted)]">Explore our catalog grid to add high-performance creator gear.</p>
+                <a href="#/catalog" class="inline-block px-6 py-3 bg-sky-500 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl hover:bg-sky-400 transition-colors">
+                  Explore Products
+                </a>
+              </div>
+            `;
+            return;
+          }
+
+          this.viewport.innerHTML = `
+            <div class="space-y-8 max-w-6xl mx-auto">
+              
+              <div class="flex items-center justify-between">
+                <h1 class="text-2xl sm:text-3xl font-black text-[var(--text-main)]">Shopping Cart & Order Summary</h1>
+                <button id="btn-clear-cart" type="button" class
